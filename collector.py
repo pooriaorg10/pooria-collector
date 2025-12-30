@@ -2,6 +2,7 @@ import requests
 import base64
 import urllib.parse
 import random
+import os
 from typing import List, Set
 
 # .لیستی از جاویدنامان خیزش زن، زندگی، آزادی و آبان ۹۸. این لیست برای یادبود این عزیزان استفاده شده است
@@ -46,8 +47,8 @@ SUB_LINKS: List[str] = [
     "https://raw.githubusercontent.com/arshiacomplus/v2rayExtractor/main/vless.html"
 ]
 
-# نام فایل خروجی برای لینک ساب نهایی
-OUTPUT_FILENAME: str = "POORIAJavidanIran.txt"
+# نام فایل خروجی در پوشه configs
+OUTPUT_FILENAME: str = "configs/proxy_configs.txt"
 
 # اضافه کردن هدر برای اینکه درخواست‌ها طبیعی‌تر به نظر برسند
 HEADERS = {
@@ -110,13 +111,15 @@ def main():
     sorted_unique_configs = sorted(list(unique_configs))
     
     for i, config in enumerate(sorted_unique_configs):
-        base_link = config.split('#')[0]
+        if '#' in config:
+            base_link = config.split('#')[0]
+        else:
+            base_link = config
         
         name_index = i % len(shuffled_names)
         javid_nam = shuffled_names[name_index]
         
-        # --- تغییر اصلی: جایگزینی تمام فاصله‌ها با خط تیره ---
-        # این کد به درستی نام‌هایی که دارای فاصله هستند را به خط تیره تبدیل می‌کند
+        # جایگزینی تمام فاصله‌ها با خط تیره
         name_without_spaces = javid_nam.replace(" ", "-")
         new_name = f"POORIA-{name_without_spaces}"
         
@@ -128,9 +131,12 @@ def main():
     final_b64_config = base64.b64encode(final_config_str.encode('utf-8')).decode('utf-8')
     
     try:
+        # ایجاد پوشه configs در صورتی که وجود نداشته باشد
+        os.makedirs(os.path.dirname(OUTPUT_FILENAME), exist_ok=True)
+
         with open(OUTPUT_FILENAME, 'w', encoding='utf-8') as f:
             f.write(final_b64_config)
-        print(f"\nیادشان گرامی. {len(renamed_configs)} کانفیگ با نام جاویدنامان در فایل '{OUTPUT_FILENAME}' ذخیره شد.")
+        print(f"\nیادشان گرامی. {len(renamed_configs)} کانفیگ در فایل '{OUTPUT_FILENAME}' ذخیره شد.")
     except IOError as e:
         print(f"خطا در نوشتن فایل خروجی: {e}")
 
