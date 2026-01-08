@@ -1,36 +1,30 @@
-name: V2Ray Config Collector
+name: Fast Config Collector
 
 on:
   schedule:
-    - cron: '0 */1 * * *'
+    - cron: '*/10 * * * *' # اجرا هر ۱۰ دقیقه
   workflow_dispatch:
-  push:
-    branches:
-      - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 3 # اگر بیشتر از ۳ دقیقه شد قطعش کن (صرفه‌جویی)
     permissions:
       contents: write
+
     steps:
-      - name: Checkout Repository
+      - name: Checkout (Lightweight)
         uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
         with:
-          python-version: '3.10'
+          fetch-depth: 1 # دانلود سریع فقط آخرین نسخه
 
-      - name: Install Dependencies
-        run: pip install requests
-
-      - name: Run Collector Script
+      - name: Run Optimized Script
         run: python collector.py
 
-      - name: Commit and Push changes
+      - name: Push Changes
         run: |
-          git config --global user.name "GitHub Actions Bot"
-          git config --global user.email "actions-bot@github.com"
+          git config --global user.name "Actions Bot"
+          git config --global user.email "bot@github.com"
           git add configs/proxy_configs.txt
-          git diff --quiet && git diff --staged --quiet || (git commit -m "Updated configs in configs folder" && git push)
+          # اگر تغییری نبود ارور نده و خارج شو
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Up" && git push)
